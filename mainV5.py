@@ -141,8 +141,10 @@ def humain_vs_ia(memoire: dict, plateau: tuple[int, ...]) -> None:
             etat = tuple(plateau)
             if etat not in memoire:
                 memoire[etat] = trouver_coups(etat, coups_possibles)
+
             print(f"Coups possibles restants pour l'IA : {memoire[etat]}")
             coup_obj = random.choice(memoire[etat])
+            
             # On mémorise l'état et l'objet Coup choisis par l'IA
             plateau_precedent_ia = etat
             dernier_coup_ia = coup_obj
