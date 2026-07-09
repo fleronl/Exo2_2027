@@ -18,17 +18,15 @@ DIM = 3  # Dimension fixe du plateau (3x3)
    
 class Coup:
     """Représente un déplacement de pion (départ -> arrivée) et stocke l'état d'origine."""
+
     def __init__(self, depart: int, arrivee: int, etat_precedent: tuple[int, ...] = None):
-        self.depart = depart
-        self.arrivee = arrivee
-        # On mémorise l'état du plateau avant que ce coup ne soit joué
-        self.etat_precedent = etat_precedent
+        self.etat_precedent = etat_precedent   # On mémorise l'état du plateau avant que ce coup ne soit joué
+        self.depart = depart                   # Indice de départ (0-8)
+        self.arrivee = arrivee                 # Indice d'arrivée (0-8)
 
-    def __repr__(self) -> str:
-        """Représentation textuelle d'un coup."""
-        return f"{self.depart} -> {self.arrivee}"
-
-#################################
+    def obtenir_coup(self) -> tuple[int, int]:
+        """retourne un tuple coup """
+        return (self.depart, self.arrivee)
     
 def convertir_indice(ligne: int, colonne: int, plateau: list) -> int:
     """Convertit ligne et colonne en indice (0-8)."""
@@ -47,16 +45,24 @@ def afficher_grille(plateau: list) -> None:
     print(" | ".join(f"{affichage[x]:>2}" for x in plateau[3:6]) + "     3 |  4 |  5")
     print(" | ".join(f"{affichage[x]:>2}" for x in plateau[6:9]) + "     6 |  7 |  8")
 
-def jouer_coup(coup: Coup, plateau: list) -> list:
+def jouer_coup(coup: tuple[int, int], plateau: list) -> list:
     """Retourne un nouveau plateau après le coup joué."""
+    depart, arrivee = coup
+    nouvelle_grille = list(plateau)
+    nouvelle_grille[arrivee] = nouvelle_grille[depart]
+    nouvelle_grille[depart] = 0
+    return tuple(nouvelle_grille)
+
+def jouer_coup_Poo(coup: Coup, plateau: tuple[int, ...]) -> tuple[int, ...]:
+    """Retourne une nouvelle grille (tuple) après application du coup."""
     nouvelle_grille = list(plateau)
     nouvelle_grille[coup.arrivee] = nouvelle_grille[coup.depart]
     nouvelle_grille[coup.depart] = 0
-
     return tuple(nouvelle_grille)
 
 def trouver_coups(joueur: int, plateau: tuple[int, ...]) -> list[Coup]:
-    """Renvoie les coups possibles pour le joueur spécifié."""
+    """ Renvoie les coups possibles pour le joueur spécifié
+        Sous la forme d'une liste d'objets coup_obj"""
     coups_possibles: list = []
     direction: int = -1 if joueur == 1 else 1
 
@@ -65,7 +71,8 @@ def trouver_coups(joueur: int, plateau: tuple[int, ...]) -> list[Coup]:
             # 1. Avancement tout droit (uniquement si la case devant est vide)
             cible_devant = i + (direction * DIM)
             if 0 <= cible_devant < DIM * DIM and plateau[cible_devant] == 0:
-                coups_possibles.append(Coup(i, cible_devant, plateau))
+                coup_obj = Coup(i, cible_devant, plateau)
+                coups_possibles.append(coup_obj)
 
             # 2. Prises diagonales (uniquement si un pion adverse s'y trouve)
             lig, col = convertir_coordonnees(i, plateau)
@@ -74,19 +81,33 @@ def trouver_coups(joueur: int, plateau: tuple[int, ...]) -> list[Coup]:
                 if 0 <= n_col < DIM:
                     cible_diag = convertir_indice(lig + direction, n_col, plateau)
                     if 0 <= cible_diag < DIM * DIM and plateau[cible_diag] == -joueur:
-                        coups_possibles.append(Coup(i, cible_diag, plateau))
+                        coup_obj = Coup(i, cible_diag, plateau)
+                        coups_possibles.append(coup_obj)
 
     return coups_possibles
 
+def convert_coup_obj(coups_obj: list[Coup])-> list[tuple[int, int]]:
+    """ Converti une liste d'objets en une liste de tuples
+        représentant des coups possibles""" 
+    liste_coups = []
+    for coup in coups_obj:
+        liste_coups.append(coup.obtenir_coup())                        
+    #return [coup for coup.obtenir_coup() in coup_possibles]
+    return liste_coups
+
 def est_finie(joueur_suivant: int, plateau:  tuple[int, ...]) -> tuple[bool, int]:
     """Vérifie la fin de partie (bool, gagnant)."""
-    if 1 in plateau[:3]: return True, 1     # Les Blancs ont atteint la première ligne
-    if 1 not in plateau: return True, -1    # Les Blancs n'ont plus de pions
-    if -1 in plateau[6:]: return True, -1   # Les Noirs ont atteint la dernière ligne
-    if -1 not in plateau: return True, 1    # Les Noirs n'ont plus de pions
+    if 1 in plateau[:3]:
+        return (True, 1)     # Les Blancs ont atteint la première ligne
+    if 1 not in plateau: 
+        return (True, -1)    # Les Blancs n'ont plus de pions
+    if -1 in plateau[6:]: 
+        return (True, -1)   # Les Noirs ont atteint la dernière ligne
+    if -1 not in plateau: 
+        return (True, 1)    # Les Noirs n'ont plus de pions
     if not trouver_coups(joueur_suivant, plateau):  # Aucun coup possible pour le joueur suivant
-        return True, -joueur_suivant
-    return False, 0
+        return (True, -joueur_suivant)
+    return (False, 0)
 
 def sauvegarder_memoire(chemin: str, memoire: dict) -> None:
     """Sauvegarde la mémoire de l'IA sur disque (pickle)."""
@@ -109,7 +130,7 @@ def charger_memoire(chemin: str) -> dict:
         print(f"Erreur lors du chargement de la memoire: {e}")
     return {}
     
-def humain_vs_ia(memoire: dict, plateau: tuple[int, ...]) -> None:
+def humain_vs_ia(memoire: dict[tuple[int, ...]: tuple[int, int]], plateau: tuple[int, ...]) -> None:
     """Permet à un humain d'affronter l'IA."""
     joueur:int = 1 # Vous jouez les Blancs
     termine: bool = False
@@ -123,58 +144,64 @@ def humain_vs_ia(memoire: dict, plateau: tuple[int, ...]) -> None:
         qui_joue = {1: 'Humain', -1: 'IA'}
         print(f"\n>>> Joueur '{qui_joue[joueur]}' joue <<<")
         afficher_grille(plateau)
-        coups_possibles = trouver_coups(joueur, plateau)
         
         if joueur == 1:
             coup_valide = False
-            print(f"Coups possibles restants pour l'humain : {coups_possibles}")
+            coups_obj: list[Coup] = trouver_coups(joueur, plateau)
+            coups_list = convert_coup_obj(coups_obj)
+            print(f"Coups possibles restants pour l'humain : {coups_list}")
             while not coup_valide:
                     try:        
                         dep = int(input("Indice de depart : "))
                         arr = int(input("Indice d'arrivee : "))
                         coup_joue = (dep, arr)
-                        assert coup_joue in coups_possibles
+                        assert coup_joue in coups_list
                         coup_valide = True
                     except AssertionError:
                         print("Coup invalide. Veuillez réessayer.")
+
+                    plateau = jouer_coup(coup_joue, plateau)
         else:
-            etat = tuple(plateau)
-            if etat not in memoire:
-                memoire[etat] = trouver_coups(etat, coups_possibles)
+            # --- Tour de l'IA ---
+            coups_obj: list[Coup] = trouver_coups(joueur, plateau)
+            coups_list = convert_coup_obj(coups_obj)
 
-            print(f"Coups possibles restants pour l'IA : {memoire[etat]}")
-            coup_obj = random.choice(memoire[etat])
+            if plateau not in memoire:
+                memoire[plateau] = coups_obj
+
+            print(f"Coups en mémoire pour l'IA : {coups_list} pour l'état {plateau}")
+            coup_joue = random.choice(coups_obj) # Récupère un objet de la liste des objets
+            print(f"L'IA a choisi le coup : {coup_joue.obtenir_coup()} pour l'état {plateau}")
+            #coup_joue = coup_obj.obtenir_coup()    # Pour memoriser du dernier coup objet de l'IA
+            dernier_coup_ia = coup_joue
             
-            # On mémorise l'état et l'objet Coup choisis par l'IA
-            plateau_precedent_ia = etat
-            dernier_coup_ia = coup_obj
-            coup_joue = coup_obj.coup
-            print(f"L'IA joue : {coup_obj}")
-            plateau = coup_obj.etat_suivant
-            joueur = -joueur
-            termine, gagnant = est_finie(joueur, plateau)
-            continue
+            plateau_precedent_ia = plateau # Pour supp du plateau si IA perdante le cas échéant
+            plateau = jouer_coup_Poo(coup_joue, plateau)
 
-        plateau = jouer_coup(coup_joue, tuple(plateau))
         joueur = -joueur
         termine, gagnant = est_finie(joueur, plateau)
-    
-    print(f"\nPartie finie ! Gagnant : {'Humain' if gagnant == 1 else 'IA'}")
 
     # Si l'IA a perdu, retirer le dernier coup choisi depuis la mémoire
-    if gagnant == 1 and dernier_coup_ia and plateau_precedent_ia in memoire:
+    if gagnant == 1 and dernier_coup_ia is not None and plateau_precedent_ia in memoire:
         print(f"L'IA a perdu. Suppression du coup {dernier_coup_ia} de l'état {plateau_precedent_ia}.")
+        print(f"{dernier_coup_ia.obtenir_coup()} est supprimé de la mémoire de l'IA pour l'état {plateau_precedent_ia}.")
         try:
+            print(f"AVANT : {memoire[plateau_precedent_ia]}")
             memoire[plateau_precedent_ia].remove(dernier_coup_ia)
+            print(f"APRES : {memoire[plateau_precedent_ia]}")
         except ValueError:
             pass
+
+        # Si cet état n'a plus aucun coup gagnant possible, on le nettoie
         if not memoire[plateau_precedent_ia]:
             del memoire[plateau_precedent_ia]
+
+    print(f"\nPartie finie ! Gagnant : {'Humain' if gagnant == 1 else 'IA'}")
 
 if __name__ == "__main__":
     # L'IA apprendra au fur et à mesure des parties jouées
     Sauvegarde = "ia_data.pkl"
-    ia_data: dict[tuple[int, ...], list[Coup]] = charger_memoire(Sauvegarde)
+    ia_data: dict[tuple[int, ...], tuple[Coup]] = charger_memoire(Sauvegarde)
     print(f"Memoire IA a chargé {len(ia_data)} etats depuis le fichier '{Sauvegarde}'")
 
     jouer = True
