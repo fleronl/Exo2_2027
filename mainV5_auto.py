@@ -7,7 +7,7 @@
 
     Modélise le plateau de jeu Hexapion 3x3.
 
-    CECI EST UNE VERSION SANS LA PHASE DE SIMULATION DE L'IA, POUR TESTER LE JEU HUMAIN VS IA.
+    CECI EST UNE VERSION EN MODE AUTO POUR SIMULER PLUSIEURS PARTIES D'AFFILÉE SANS INTERVENTION HUMAINE
 """
 import os
 import pickle
@@ -146,21 +146,13 @@ def humain_vs_ia(memoire: dict[tuple[int, ...]: tuple[int, int]], plateau: tuple
         afficher_grille(plateau)
         
         if joueur == 1:
-            coup_valide = False
             coups_obj: list[Coup] = trouver_coups(joueur, plateau)
             coups_list = convert_coup_obj(coups_obj)
             print(f"Coups possibles restants pour l'humain : {coups_list}")
-            while not coup_valide:
-                    try:        
-                        dep = int(input("Indice de depart : "))
-                        arr = int(input("Indice d'arrivee : "))
-                        coup_joue = (dep, arr)
-                        assert coup_joue in coups_list
-                        coup_valide = True
-                    except AssertionError:
-                        print("Coup invalide. Veuillez réessayer.")
-
-                    plateau = jouer_coup(coup_joue, plateau)
+            coup_joue = random.choice(coups_list)
+            print(f"coup choisi : {coup_joue}")
+            plateau = jouer_coup(coup_joue, plateau)
+             
         else:
             # --- Tour de l'IA ---
             coups_obj: list[Coup] = trouver_coups(joueur, plateau)
@@ -183,34 +175,38 @@ def humain_vs_ia(memoire: dict[tuple[int, ...]: tuple[int, int]], plateau: tuple
 
     # Si l'IA a perdu, retirer le dernier coup choisi depuis la mémoire
     if gagnant == 1 and dernier_coup_ia is not None and plateau_precedent_ia in memoire:
-        print(f"L'IA a perdu. Suppression du coup {dernier_coup_ia} de l'état {plateau_precedent_ia}.")
+        print(f"L'IA a perdu. Suppression du dernier coup :")
+        print(f"{dernier_coup_ia} : {dernier_coup_ia.obtenir_coup()} de l'état {plateau_precedent_ia}.")
+        print(f"AVANT : {memoire[plateau_precedent_ia]}")
+        test = [coup.obtenir_coup() for coup in memoire[plateau_precedent_ia]]
+        for coup in memoire[plateau_precedent_ia]:
+            if coup.obtenir_coup() == dernier_coup_ia.obtenir_coup():
+                memoire[plateau_precedent_ia].remove(coup)
+        print(f"APRES : {memoire[plateau_precedent_ia]}")
         print(f"{dernier_coup_ia.obtenir_coup()} est supprimé de la mémoire de l'IA pour l'état {plateau_precedent_ia}.")
-        try:
-            print(f"AVANT : {memoire[plateau_precedent_ia]}")
-            memoire[plateau_precedent_ia].remove(dernier_coup_ia)
-            print(f"APRES : {memoire[plateau_precedent_ia]}")
-        except ValueError:
-            pass
 
         # Si cet état n'a plus aucun coup gagnant possible, on le nettoie
         if not memoire[plateau_precedent_ia]:
             del memoire[plateau_precedent_ia]
 
     print(f"\nPartie finie ! Gagnant : {'Humain' if gagnant == 1 else 'IA'}")
+    
+def afficher_stat(memoire: dict[tuple[int, ...]: [int, int]], sauvegarde: str) -> None:
+    """ Compte le nombre de plateau et de coups possibles total en mémoire """
+    cpt_coup = 0
+    for valeur in memoire:
+        cpt_coup += len(valeur)
 
 if __name__ == "__main__":
     # L'IA apprendra au fur et à mesure des parties jouées
     Sauvegarde = "ia_data.pkl"
     ia_data: dict[tuple[int, ...], tuple[Coup]] = charger_memoire(Sauvegarde)
-    print(f"Memoire IA a chargé {len(ia_data)} etats depuis le fichier '{Sauvegarde}'")
 
-    jouer = True
-    while jouer:
+    for _ in range(1000):
         plateau: tuple[int, ...] = (-1, -1, -1, 0, 0, 0, 1, 1, 1)
         humain_vs_ia(ia_data, plateau)
-        print(f"Memoire IA a sauvegardé {len(ia_data)} etats")
-        jouer = input("Voulez-vous rejouer une partie contre l'IA ? (o/n) : ").lower() == 'o'
+        afficher_stat(ia_data, Sauvegarde)
 
     # Sauvegarde après la partie pour conserver l'apprentissage
     sauvegarder_memoire(Sauvegarde, ia_data)
-    print(f"Memoire IA a sauvegardé {len(ia_data)} etats dans le fichier '{Sauvegarde}'")
+    afficher_stat(ia_data, Sauvegarde)
