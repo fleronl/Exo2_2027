@@ -163,14 +163,14 @@ def humain_vs_ia(memoire: dict[tuple[int, ...]: tuple[int, int]], plateau: tuple
                     plateau = jouer_coup(coup_joue, plateau)
         else:
             # --- Tour de l'IA ---
-            coups_obj: list[Coup] = trouver_coups(joueur, plateau)
-            coups_list = convert_coup_obj(coups_obj)
 
             if plateau not in memoire:
-                memoire[plateau] = coups_obj
+                ####coups_obj: list[Coup] = trouver_coups(joueur, plateau)
+                #### coups_list = convert_coup_obj(coups_obj)
+                memoire[plateau] = trouver_coups(joueur, plateau)
 
-            print(f"Coups en mémoire pour l'IA : {coups_list} pour l'état {plateau}")
-            coup_joue = random.choice(coups_obj) # Récupère un objet de la liste des objets
+            print(f"Coups en mémoire pour l'IA : {convert_coup_obj(memoire[plateau])} pour l'état {plateau}")
+            coup_joue = random.choice(memoire[plateau]) # Récupère un objet de la liste des objets
             print(f"L'IA a choisi le coup : {coup_joue.obtenir_coup()} pour l'état {plateau}")
             #coup_joue = coup_obj.obtenir_coup()    # Pour memoriser du dernier coup objet de l'IA
             dernier_coup_ia = coup_joue
@@ -185,13 +185,16 @@ def humain_vs_ia(memoire: dict[tuple[int, ...]: tuple[int, int]], plateau: tuple
     if gagnant == 1 and dernier_coup_ia is not None and plateau_precedent_ia in memoire:
         print(f"L'IA a perdu. Suppression du dernier coup :")
         print(f"{dernier_coup_ia} : {dernier_coup_ia.obtenir_coup()} de l'état {plateau_precedent_ia}.")
-        print(f"AVANT : {memoire[plateau_precedent_ia]}")
+
         test = [coup.obtenir_coup() for coup in memoire[plateau_precedent_ia]]
+        print(f"Mémoire IA avant : {test}")
+
         for coup in memoire[plateau_precedent_ia]:
             if coup.obtenir_coup() == dernier_coup_ia.obtenir_coup():
                 memoire[plateau_precedent_ia].remove(coup)
-        print(f"APRES : {memoire[plateau_precedent_ia]}")
-        print(f"{dernier_coup_ia.obtenir_coup()} est supprimé de la mémoire de l'IA pour l'état {plateau_precedent_ia}.")
+
+        test = [coup.obtenir_coup() for coup in memoire[plateau_precedent_ia]]
+        print(f"Memoire après IA : {test}")
 
         # Si cet état n'a plus aucun coup gagnant possible, on le nettoie
         if not memoire[plateau_precedent_ia]:

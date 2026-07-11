@@ -148,25 +148,17 @@ def humain_vs_ia(memoire: dict[tuple[int, ...]: tuple[int, int]], plateau: tuple
         if joueur == 1:
             coups_obj: list[Coup] = trouver_coups(joueur, plateau)
             coups_list = convert_coup_obj(coups_obj)
-            print(f"Coups possibles restants pour l'humain : {coups_list}")
             coup_joue = random.choice(coups_list)
-            print(f"coup choisi : {coup_joue}")
             plateau = jouer_coup(coup_joue, plateau)
              
         else:
             # --- Tour de l'IA ---
-            coups_obj: list[Coup] = trouver_coups(joueur, plateau)
-            coups_list = convert_coup_obj(coups_obj)
 
             if plateau not in memoire:
-                memoire[plateau] = coups_obj
+                memoire[plateau] = trouver_coups(joueur, plateau)
 
-            print(f"Coups en mémoire pour l'IA : {coups_list} pour l'état {plateau}")
-            coup_joue = random.choice(coups_obj) # Récupère un objet de la liste des objets
-            print(f"L'IA a choisi le coup : {coup_joue.obtenir_coup()} pour l'état {plateau}")
-            #coup_joue = coup_obj.obtenir_coup()    # Pour memoriser du dernier coup objet de l'IA
+            coup_joue = random.choice(memoire[plateau]) # Récupère un objet de la liste des objets
             dernier_coup_ia = coup_joue
-            
             plateau_precedent_ia = plateau # Pour supp du plateau si IA perdante le cas échéant
             plateau = jouer_coup_Poo(coup_joue, plateau)
 
@@ -175,15 +167,9 @@ def humain_vs_ia(memoire: dict[tuple[int, ...]: tuple[int, int]], plateau: tuple
 
     # Si l'IA a perdu, retirer le dernier coup choisi depuis la mémoire
     if gagnant == 1 and dernier_coup_ia is not None and plateau_precedent_ia in memoire:
-        print(f"L'IA a perdu. Suppression du dernier coup :")
-        print(f"{dernier_coup_ia} : {dernier_coup_ia.obtenir_coup()} de l'état {plateau_precedent_ia}.")
-        print(f"AVANT : {memoire[plateau_precedent_ia]}")
-        test = [coup.obtenir_coup() for coup in memoire[plateau_precedent_ia]]
         for coup in memoire[plateau_precedent_ia]:
             if coup.obtenir_coup() == dernier_coup_ia.obtenir_coup():
                 memoire[plateau_precedent_ia].remove(coup)
-        print(f"APRES : {memoire[plateau_precedent_ia]}")
-        print(f"{dernier_coup_ia.obtenir_coup()} est supprimé de la mémoire de l'IA pour l'état {plateau_precedent_ia}.")
 
         # Si cet état n'a plus aucun coup gagnant possible, on le nettoie
         if not memoire[plateau_precedent_ia]:
@@ -196,17 +182,17 @@ def afficher_stat(memoire: dict[tuple[int, ...]: [int, int]], sauvegarde: str) -
     cpt_coup = 0
     for valeur in memoire:
         cpt_coup += len(valeur)
+    print(f"Memoire IA -> {len(memoire)} grilles pour {cpt_coup} coups depuis le fichier {sauvegarde}")
 
 if __name__ == "__main__":
     # L'IA apprendra au fur et à mesure des parties jouées
     Sauvegarde = "ia_data.pkl"
     ia_data: dict[tuple[int, ...], tuple[Coup]] = charger_memoire(Sauvegarde)
 
-    for _ in range(1000):
+    for _ in range(2000):
         plateau: tuple[int, ...] = (-1, -1, -1, 0, 0, 0, 1, 1, 1)
         humain_vs_ia(ia_data, plateau)
         afficher_stat(ia_data, Sauvegarde)
 
     # Sauvegarde après la partie pour conserver l'apprentissage
     sauvegarder_memoire(Sauvegarde, ia_data)
-    afficher_stat(ia_data, Sauvegarde)
