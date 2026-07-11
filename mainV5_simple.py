@@ -165,14 +165,11 @@ def humain_vs_ia(memoire: dict[tuple[int, ...]: tuple[int, int]], plateau: tuple
             # --- Tour de l'IA ---
 
             if plateau not in memoire:
-                ####coups_obj: list[Coup] = trouver_coups(joueur, plateau)
-                #### coups_list = convert_coup_obj(coups_obj)
                 memoire[plateau] = trouver_coups(joueur, plateau)
 
             print(f"Coups en mémoire pour l'IA : {convert_coup_obj(memoire[plateau])} pour l'état {plateau}")
             coup_joue = random.choice(memoire[plateau]) # Récupère un objet de la liste des objets
             print(f"L'IA a choisi le coup : {coup_joue.obtenir_coup()} pour l'état {plateau}")
-            #coup_joue = coup_obj.obtenir_coup()    # Pour memoriser du dernier coup objet de l'IA
             dernier_coup_ia = coup_joue
             
             plateau_precedent_ia = plateau # Pour supp du plateau si IA perdante le cas échéant
