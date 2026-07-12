@@ -8,6 +8,14 @@
     Modélise le plateau de jeu Hexapion 3x3.
 
     CECI EST UNE VERSION EN MODE SIMPLE POUR TESTER LE JEU HUMAIN VS IA, SANS SIMULATION DE L'IA.
+    L'IA A CEPENDANT UNE MEMOIRE DEJA ENREGISTREE SUR DISQUE POUR APPRENDRE DES PARTIES PRECEDENTES.
+
+    Elle est maintenant mauvaise perdante car elle supprime de sa mémoire le dernier coup joué si elle perd la partie
+    et préfère abandonner si elle n'a plus de coups possibles.
+    Si l'humain joue en premier, il perdra toujours contre l'IA.
+    Dur dur la vie...
+
+    Pour avoir une IA fairplay, il faut supprimer le fichier ia_data.pkl et relancer le jeu pour que l'IA apprenne à jouer contre l'humain.
 """
 import os
 import pickle
@@ -24,7 +32,7 @@ class Coup:
         self.depart = depart                   # Indice de départ (0-8)
         self.arrivee = arrivee                 # Indice d'arrivée (0-8)
 
-    def obtenir_coup(self) -> tuple[int, int]:
+    def Obtenir_coup(self) -> tuple[int, int]:
         """retourne un tuple coup """
         return (self.depart, self.arrivee)
     
@@ -91,8 +99,8 @@ def convert_coup_obj(coups_obj: list[Coup])-> list[tuple[int, int]]:
         représentant des coups possibles""" 
     liste_coups = []
     for coup in coups_obj:
-        liste_coups.append(coup.obtenir_coup())                        
-    #return [coup for coup.obtenir_coup() in coup_possibles]
+        liste_coups.append(coup.Obtenir_coup())                        
+    #return [coup for coup.Obtenir_coup() in coup_possibles]
     return liste_coups
 
 def est_finie(joueur_suivant: int, plateau:  tuple[int, ...]) -> tuple[bool, int]:
@@ -172,7 +180,7 @@ def humain_vs_ia(joueur: int, memoire: dict[tuple[int, ...]: tuple[int, int]], p
                 termine, gagnant = True, 1  
                 break
             coup_joue = random.choice(memoire[plateau]) # Récupère un objet de la liste des objets
-            print(f"L'IA a choisi le coup : {coup_joue.obtenir_coup()} pour l'état {plateau}")
+            print(f"L'IA a choisi le coup : {coup_joue.Obtenir_coup()} pour l'état {plateau}")
             dernier_coup_ia = coup_joue
             
             plateau_precedent_ia = plateau # Pour supp du plateau si IA perdante le cas échéant

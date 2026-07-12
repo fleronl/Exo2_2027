@@ -24,7 +24,7 @@ class Coup:
         self.depart = depart                   # Indice de départ (0-8)
         self.arrivee = arrivee                 # Indice d'arrivée (0-8)
 
-    def obtenir_coup(self) -> tuple[int, int]:
+    def Obtenir_coup(self) -> tuple[int, int]:
         """retourne un tuple coup """
         return (self.depart, self.arrivee)
     
@@ -91,8 +91,8 @@ def convert_coup_obj(coups_obj: list[Coup])-> list[tuple[int, int]]:
         représentant des coups possibles""" 
     liste_coups = []
     for coup in coups_obj:
-        liste_coups.append(coup.obtenir_coup())                        
-    #return [coup for coup.obtenir_coup() in coup_possibles]
+        liste_coups.append(coup.Obtenir_coup())                        
+    #return [coup for coup.Obtenir_coup() in coup_possibles]
     return liste_coups
 
 def est_finie(joueur_suivant: int, plateau:  tuple[int, ...]) -> tuple[bool, int]:
@@ -172,7 +172,7 @@ def humain_vs_ia(joueur: int, memoire: dict[tuple[int, ...]: tuple[int, int]], p
     # Si l'IA a perdu, retirer le dernier coup choisi depuis la mémoire
     if gagnant == 1 and dernier_coup_ia is not None and plateau_precedent_ia in memoire:
         for coup in memoire[plateau_precedent_ia]:
-            if coup.obtenir_coup() == dernier_coup_ia.obtenir_coup():
+            if coup.Obtenir_coup() == dernier_coup_ia.Obtenir_coup():
                 memoire[plateau_precedent_ia].remove(coup)
 
         # Si cet état n'a plus aucun coup gagnant possible, on le nettoie
