@@ -130,9 +130,9 @@ def charger_memoire(chemin: str) -> dict:
         print(f"Erreur lors du chargement de la memoire: {e}")
     return {}
     
-def humain_vs_ia(memoire: dict[tuple[int, ...]: tuple[int, int]], plateau: tuple[int, ...]) -> None:
+def humain_vs_ia(joueur: int, memoire: dict[tuple[int, ...]: tuple[int, int]], plateau: tuple[int, ...]) -> int:
     """Permet à un humain d'affronter l'IA."""
-    joueur:int = 1 # Vous jouez les Blancs
+    joueur:int = -joueur # Le joueur qui a perdu la partie précédente pour que l'IA apprenne plus vite
     termine: bool = False
     gagnant: int = 0
 
@@ -156,7 +156,11 @@ def humain_vs_ia(memoire: dict[tuple[int, ...]: tuple[int, int]], plateau: tuple
 
             if plateau not in memoire:
                 memoire[plateau] = trouver_coups(joueur, plateau)
-
+            
+            if not memoire[plateau]:
+                print("L'IA n'a aucun coup possible. Elle préfère abondonner !")
+                termine, gagnant = True, 1
+                break
             coup_joue = random.choice(memoire[plateau]) # Récupère un objet de la liste des objets
             dernier_coup_ia = coup_joue
             plateau_precedent_ia = plateau # Pour supp du plateau si IA perdante le cas échéant
@@ -172,10 +176,11 @@ def humain_vs_ia(memoire: dict[tuple[int, ...]: tuple[int, int]], plateau: tuple
                 memoire[plateau_precedent_ia].remove(coup)
 
         # Si cet état n'a plus aucun coup gagnant possible, on le nettoie
-        if not memoire[plateau_precedent_ia]:
-            del memoire[plateau_precedent_ia]
+        #if not memoire[plateau_precedent_ia]:
+        #    del memoire[plateau_precedent_ia]
 
     print(f"\nPartie finie ! Gagnant : {'Humain' if gagnant == 1 else 'IA'}")
+    return gagnant
     
 def afficher_stat(memoire: dict[tuple[int, ...]: [int, int]], sauvegarde: str) -> None:
     """ Compte le nombre de plateau et de coups possibles total en mémoire """
@@ -185,13 +190,17 @@ def afficher_stat(memoire: dict[tuple[int, ...]: [int, int]], sauvegarde: str) -
     print(f"Memoire IA -> {len(memoire)} grilles pour {cpt_coup} coups depuis le fichier {sauvegarde}")
 
 if __name__ == "__main__":
-    # L'IA apprendra au fur et à mesure des parties jouées
+    # L'IA apprend par itérations successives en jouant contre elle-même
+    # Pour obtenir un nomdre de plateaux complets il faut que Humain et IA jouent chacun leur tour, donc 2 tours = 1 partie complète
+
     Sauvegarde = "ia_data.pkl"
     ia_data: dict[tuple[int, ...], tuple[Coup]] = charger_memoire(Sauvegarde)
-
+    joueur: int = 1  # L'humain joue toujours les Blancs et en premier, l'IA joue les Noirs
+    
     for _ in range(2000):
         plateau: tuple[int, ...] = (-1, -1, -1, 0, 0, 0, 1, 1, 1)
-        humain_vs_ia(ia_data, plateau)
+
+        joueur = humain_vs_ia(joueur, ia_data, plateau)
         afficher_stat(ia_data, Sauvegarde)
 
     # Sauvegarde après la partie pour conserver l'apprentissage
