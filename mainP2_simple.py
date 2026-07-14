@@ -221,7 +221,7 @@ def afficher_stat(memoire: dict[tuple[int, ...]: [int, int]], sauvegarde: str) -
 
 if __name__ == "__main__":
     # L'IA apprendra au fur et à mesure des parties jouées
-    Sauvegarde = "ia_data.pkl"
+    Sauvegarde = "ia_data_P2.pkl"
     ia_data: dict[tuple[int, ...], tuple[Coup]] = charger_memoire(Sauvegarde)
     gagnant = 1 # Par défaut l'Humain commence à jouer les Blancs
 

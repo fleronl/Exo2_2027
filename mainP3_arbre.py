@@ -146,6 +146,28 @@ def construire_arbre(plateau: tuple[int, ...], joueur: int, depart: int = None, 
         print(f"{'##################################################' if niveau == 1 else ''}")
     return noeud
 
+def parcours_largeur(noeud: Noeud) -> None:
+    """
+    Parcours en largeur de l'arbre (NSI : File / FIFO).
+    Affiche les noeuds par niveau.
+    """
+    from collections import deque
+    
+    file = [noeud]
+    niveau = 0
+    
+    while file:
+        taille_niveau = len(file)
+        print(f"\n>>>      Niveau {niveau}        <<<")
+        
+        for _ in range(taille_niveau):
+            courant = file.pop(0)
+            print(f"  Noeud : {courant.Afficher_noeud()}")
+            courant.Afficher_grille()
+            file.extend(courant.enfants)
+        
+        niveau += 1
+
 def taille_arbre(noeud: Noeud) -> int:
     """
     Calcule le nombre total de noeuds (états de jeu) dans l'arbre.
@@ -188,7 +210,10 @@ if __name__ == "__main__":
     
     # 1. Création de la racine et génération de l'arbre (les Blancs (1) commencent)
     racine_jeu = construire_arbre(plateau_depart, 1)
-    """
+    
+    # 2. Parcours en largeur pour visualiser l'arbre (optionnel)
+    parcours_largeur(racine_jeu)
+
     # 2. Manipulation 1 : Compter le nombre d'états
     nb_noeuds = taille_arbre(racine_jeu)
     print(f"L'arbre de jeu complet contient {nb_noeuds} états (noeuds) possibles.")
@@ -203,4 +228,3 @@ if __name__ == "__main__":
         for i, noeud_coup in enumerate(victoires_blancs[0], 1):
             joueur_str = "Blancs" if i % 2 != 0 else "Noirs"
             print(f"  Tour {i} ({joueur_str}) : Déplacement du pion {noeud_coup.depart} vers {noeud_coup.arrivee}")
-    """
