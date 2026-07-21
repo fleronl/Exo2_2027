@@ -53,9 +53,9 @@ def jouer_coup(coup: tuple[int, int], plateau: list) -> list:
     nouvelle_grille[depart] = 0
     return tuple(nouvelle_grille)
 
-def jouer_coup_Poo(coup: Coup, plateau: tuple[int, ...]) -> tuple[int, ...]:
+def jouer_coup_Poo(coup: Coup) -> tuple[int, ...]:
     """Retourne une nouvelle grille (tuple) après application du coup."""
-    nouvelle_grille = list(plateau)
+    nouvelle_grille = list(coup.etat_precedent)
     nouvelle_grille[coup.arrivee] = nouvelle_grille[coup.depart]
     nouvelle_grille[coup.depart] = 0
     return tuple(nouvelle_grille)
@@ -165,7 +165,7 @@ def humain_vs_ia(joueur: int, memoire: dict[tuple[int, ...]: tuple[int, int]], p
             coup_joue = random.choice(memoire[plateau]) # Récupère un objet de la liste des objets
             dernier_coup_ia = coup_joue
             plateau_precedent_ia = plateau # Pour supp du plateau si IA perdante le cas échéant
-            plateau = jouer_coup_Poo(coup_joue, plateau)
+            plateau = jouer_coup_Poo(coup_joue)
 
         joueur = -joueur
         termine, gagnant = est_finie(joueur, plateau)
