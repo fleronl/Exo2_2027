@@ -137,6 +137,24 @@ def charger_memoire(chemin: str) -> dict:
     except Exception as e:
         print(f"Erreur lors du chargement de la memoire: {e}")
     return {}
+
+def echec_ia(memoire_ia, dernier_coup_ia, plateau_precedent_ia):
+    """ Retire de la mémoire de l'IA son dernier coup joué qui à conduit à sa echec"""
+    
+    print(f"L'IA a perdu. Suppression de son dernier coup :")
+    print(f"{dernier_coup_ia} : {dernier_coup_ia.obtenir_coup()} de l'état {plateau_precedent_ia}.")
+
+    test = [coup.obtenir_coup() for coup in memoire[plateau_precedent_ia]]
+    print(f"Mémoire IA avant : {test}")
+
+    for coup in memoire[plateau_precedent_ia]:
+        if coup.obtenir_coup() == dernier_coup_ia.obtenir_coup():
+            memoire[plateau_precedent_ia].remove(coup)
+
+    test = [coup.obtenir_coup() for coup in memoire[plateau_precedent_ia]]
+    print(f"Memoire après IA : {test}")
+    
+    return memoire_ia
     
 def humain_vs_ia(joueur: int, memoire: dict[tuple[int, ...]: tuple[int, int]], plateau: tuple[int, ...]) -> int:
     """Permet à un humain d'affronter l'IA."""
@@ -191,7 +209,7 @@ def humain_vs_ia(joueur: int, memoire: dict[tuple[int, ...]: tuple[int, int]], p
 
     # Si l'IA a perdu, retirer le dernier coup choisi depuis la mémoire
     if gagnant == 1 and dernier_coup_ia is not None and plateau_precedent_ia in memoire:
-        print(f"L'IA a perdu. Suppression du dernier coup :")
+        print(f"L'IA a perdu. Suppression de son dernier coup :")
         print(f"{dernier_coup_ia} : {dernier_coup_ia.obtenir_coup()} de l'état {plateau_precedent_ia}.")
 
         test = [coup.obtenir_coup() for coup in memoire[plateau_precedent_ia]]
