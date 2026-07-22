@@ -36,14 +36,6 @@ class Noeud:
             return f"{self.depart} -> {self.arrivee}"
         return "Racine"
     
-    def Afficher_plateau(self) -> str:
-        """Représentation textuelle du plateau."""
-        lignes = []
-        for i in range(DIM):
-            ligne = self.plateau[i*DIM:(i+1)*DIM]
-            lignes.append(' '.join(str(x) for x in ligne))
-        return '\n'.join(lignes)
-    
     def Afficher_grille(self) -> None:
         """Méthode pour afficher la grille de jeu."""
         affichage = {1: "B", 0: ".", -1: "N"}
@@ -96,19 +88,12 @@ def est_finie(joueur_suivant: int, plateau: tuple[int, ...]) -> tuple[bool, int]
     Retourne (True, gagnant) ou (False, 0).
     """
     # Un pion Blanc a atteint la ligne du haut (indices 0, 1, 2)
-    if 1 in plateau[:DIM]: 
-        return True, 1
-    
+    if 1 in plateau[:DIM]: return True, 1
     # Un pion Noir a atteint la ligne du bas (indices 6, 7, 8)
-    if -1 in plateau[(DIM-1)*DIM:]: 
-        return True, -1
-    
+    if -1 in plateau[(DIM-1)*DIM:]: return True, -1
     # Un joueur n'a plus aucun pion
-    if 1 not in plateau: 
-        return True, -1
-    if -1 not in plateau: 
-        return True, 1
-    
+    if 1 not in plateau: return True, -1
+    if -1 not in plateau: return True, 1
     # Le joueur suivant est bloqué (aucun coup disponible) -> l'autre gagne
     if not trouver_coups(joueur_suivant, plateau):
         return True, -joueur_suivant
