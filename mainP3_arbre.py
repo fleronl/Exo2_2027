@@ -180,29 +180,21 @@ def taille_arbre(noeud: Noeud) -> int:
         taille += taille_arbre(enfant)
     return taille
 
-def chemins_gagnants(noeud: Noeud, joueur_cible: int, chemin_actuel: list[Noeud] = None) -> list[list[Noeud]]:
-    """
-    Parcours l'arbre pour trouver tous les chemins menant à une victoire d'un joueur.
-    (Concept NSI : Recherche de chemins / Backtracking).
-    """
-    if chemin_actuel is None:
-        chemin_actuel = []
-        
-    chemins_trouves = []
+def calculer_toutes_parties(plateau, joueur):
+    # Condition d'arrêt : si la partie est finie, on a trouvé 1 chemin complet
+    fini, gagnant = est_finie(joueur, plateau)
+    if fini:
+        return 1
     
-    if noeud.est_feuille:
-        if noeud.gagnant == joueur_cible:
-            # On ajoute une copie du chemin gagnant
-            chemins_trouves.append(list(chemin_actuel))
-        return chemins_trouves
+    total_chemins = 0
+    coups = trouver_coups(joueur, plateau)
+    
+    for coup in coups:
+        nouveau_plateau = jouer_coup(coup, plateau)
+        # Exploration récursive pour compter les feuilles de l'arbre
+        total_chemins += calculer_toutes_parties(nouveau_plateau, -joueur)
         
-    for enfant in noeud.enfants:
-        chemin_actuel.append(enfant) # On avance
-        chemins_trouves.extend(chemins_gagnants(enfant, joueur_cible, chemin_actuel))
-        chemin_actuel.pop() # Backtracking (on recule pour tester une autre branche)
-        
-    return chemins_trouves
-
+    return total_chemins
 
 if __name__ == "__main__":
     plateau_depart = (-1, -1, -1, 0, 0, 0, 1, 1, 1)
@@ -220,13 +212,7 @@ if __name__ == "__main__":
     nb_noeuds2 = taille_arbre_iterative(racine_jeu)
     print(f"VERION 2 de jeu complet contient {nb_noeuds2} états (noeuds) possibles.")
     
-    # 3. Manipulation 2 : Trouver tous les chemins victorieux pour les Blancs (1)
-    victoires_blancs = chemins_gagnants(racine_jeu, 1)
-    print(f"Il existe {len(victoires_blancs)} séquences (chemins) menant à une victoire des Blancs.")
+    joueur = 1  # Les Blancs commencent
+    total_parties = calculer_toutes_parties(plateau_depart, joueur)
+    print(f"Nombre total de parties possibles : {total_parties}")
     
-    # Bonus : Afficher la première séquence gagnante trouvée
-    if victoires_blancs:
-        print("\nExemple de séquence gagnante pour les Blancs :")
-        for i, noeud_coup in enumerate(victoires_blancs[0], 1):
-            joueur_str = "Blancs" if i % 2 != 0 else "Noirs"
-            print(f"  Tour {i} ({joueur_str}) : Déplacement du pion {noeud_coup.depart} vers {noeud_coup.arrivee}")
