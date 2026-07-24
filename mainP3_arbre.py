@@ -152,6 +152,22 @@ def parcours_largeur(noeud: Noeud) -> None:
         
         niveau += 1
 
+def taille_arbre_iterative(racine: Noeud) -> int:
+    # On utilise une pile (liste Python) pour stocker les noeuds à visiter
+    pile = [racine]
+    compteur = 0
+    
+    while pile:
+        # On extrait le dernier noeud ajouté (LIFO)
+        noeud_courant = pile.pop()
+        compteur += 1
+        
+        # On ajoute tous les enfants du noeud actuel à la pile pour traitement futur
+        for enfant in noeud_courant.enfants:
+            pile.append(enfant)
+            
+    return compteur
+
 def taille_arbre(noeud: Noeud) -> int:
     """
     Calcule le nombre total de noeuds (états de jeu) dans l'arbre.
@@ -197,10 +213,12 @@ if __name__ == "__main__":
     
     # 2. Parcours en largeur pour visualiser l'arbre (optionnel)
     parcours_largeur(racine_jeu)
-
+ 
     # 2. Manipulation 1 : Compter le nombre d'états
     nb_noeuds = taille_arbre(racine_jeu)
     print(f"L'arbre de jeu complet contient {nb_noeuds} états (noeuds) possibles.")
+    nb_noeuds2 = taille_arbre_iterative(racine_jeu)
+    print(f"VERION 2 de jeu complet contient {nb_noeuds2} états (noeuds) possibles.")
     
     # 3. Manipulation 2 : Trouver tous les chemins victorieux pour les Blancs (1)
     victoires_blancs = chemins_gagnants(racine_jeu, 1)
